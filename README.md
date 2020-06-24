@@ -123,6 +123,6 @@ class ProductController extends BreadController
 }
 ```
 
-### Saving images
+### Saving files/images
 
-Requires media library
+In order for the built-in functionality of storing files and/or images, this package requires the https://github.com/spatie/laravel-medialibrary to be installed and configured.
