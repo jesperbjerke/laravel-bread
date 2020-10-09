@@ -6,8 +6,6 @@ This package makes use of the API Query Builder from https://github.com/jesperbj
 
 ## Installation
 
-Add the following to your composer.json. Make sure your git user is allowed to access this repository.
-
 ```shell script
 composer require bjerke/laravel-bread
 ```
