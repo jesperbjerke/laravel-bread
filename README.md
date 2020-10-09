@@ -1,6 +1,6 @@
 # Laravel Bread
 
-A library to easily handle BREAD (Browse, Read, Edit, Add, Delete) operations through a JSON Rest API. Define model definitions, performs validations and proivdes default controller routes.
+A library to easily handle BREAD (Browse, Read, Edit, Add, Delete) operations through a JSON Rest API. Define model definitions, performs validations and provides default controller routes.
 
 This package makes use of the API Query Builder from https://github.com/jesperbjerke/laravel-api-query-builder
 
