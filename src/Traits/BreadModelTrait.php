@@ -2,9 +2,12 @@
 
 namespace Bjerke\Bread\Traits;
 
+use Bjerke\Bread\Tus\Server as TusServer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 use Bjerke\Bread\Helpers\Strings;
@@ -261,14 +264,28 @@ trait BreadModelTrait
                     if (isset($file['add']) && $file['add'] === true) {
                         switch ($type) {
                             case 'images':
-                                $this->addImage($file['base64'], $collection);
+                                if (isset($file['tusKey']) && $file['tusKey']) {
+                                    $this->addImage($file['tusKey'], $collection, 'TUS');
+                                } else {
+                                    $this->addImage($file['base64'], $collection, 'base64');
+                                }
                                 break;
                             case 'files':
-                                $this->addFile(
-                                    $file['base64'],
-                                    $file['name'] ?? null,
-                                    $collection
-                                );
+                                if (isset($file['tusKey']) && $file['tusKey']) {
+                                    $this->addFile(
+                                        $file['base64'],
+                                        $file['name'] ?? null,
+                                        $collection,
+                                        'TUS'
+                                    );
+                                } else {
+                                    $this->addFile(
+                                        $file['base64'],
+                                        $file['name'] ?? null,
+                                        $collection,
+                                        'base64'
+                                    );
+                                }
                                 break;
                         }
                     } elseif (isset($file['remove']) && $file['remove'] === true) {
@@ -285,19 +302,43 @@ trait BreadModelTrait
     }
 
     /**
+     * Returns a media library file adder instance based on either base64 or a TUS upload key
+     * Validates the file against allowed mime types
+     *
+     * @param string $file Either Base64 string representation of the file to add or TUS upload key
+     * @param array  $allowedMimeTypes Array of allowed mime types
+     * @param string $fileFormat A string representing the format the file is. Either base64 or TUS
+     *
+     * @return \Spatie\MediaLibrary\MediaCollections\FileAdder
+     */
+    public function validateAndAddMedia(string $file, array $allowedMimeTypes, $fileFormat = 'base64')
+    {
+        if ($fileFormat === 'base64') {
+            $mediaFile = $this->addMediaFromBase64($file, $allowedMimeTypes);
+        } else {
+            $filePath = TusServer::getUploadedFilePath($file);
+            $this->guardAgainstInvalidMimeType($filePath, $allowedMimeTypes);
+            $mediaFile = $this->addMedia($filePath);
+        }
+
+        return $mediaFile;
+    }
+
+    /**
      * Add image to collection from base64 string, is based on the field config from FieldDefintion,
      *
-     * @param string $base64 Base64 string representation of the image to add
+     * @param string $file Either Base64 string representation of the image to add or TUS upload key
      * @param string $collection Specific collection to add the image to
+     * @param string $fileFormat A string representing the format the file is. Either base64 or TUS
      *
      * @throws \Exception
      */
-    public function addImage($base64, $collection = 'images')
+    public function addImage($file, $collection = 'images', $fileFormat = 'base64')
     {
         if ($this instanceof \Spatie\MediaLibrary\HasMedia ||
             $this instanceof \Spatie\MediaLibrary\HasMedia\HasMedia
         ) {
-            $this->addMediaFromBase64($base64, $this->allowedImageMimeTypes)->toMediaCollection($collection);
+            $this->validateAndAddMedia($file, $this->allowedImageMimeTypes, $fileFormat)->toMediaCollection($collection);
         } else {
             throw new \Exception('Class must implement HasMedia');
         }
@@ -306,32 +347,33 @@ trait BreadModelTrait
     /**
      * Add file to collection from base64 string, is based on the field config from FieldDefintion,
      *
-     * @param string $base64 Base64 string representation of the file to add
+     * @param string $file Either Base64 string representation of the file to add or TUS upload key
      * @param string $name Optional "display name", otherwise will use filename that is generated automatically
      * @param string $collection Specific collection to add the file to
+     * @param string $fileFormat A string representing the format the file is. Either base64 or TUS
      *
      * @throws \Exception
      */
-    public function addFile($base64, $name = null, $collection = 'files')
+    public function addFile($file, $name = null, $collection = 'files', $fileFormat = 'base64')
     {
         if ($this instanceof \Spatie\MediaLibrary\HasMedia ||
             $this instanceof \Spatie\MediaLibrary\HasMedia\HasMedia
         ) {
-            $file = $this->addMediaFromBase64($base64, $this->allowedFileMimeTypes);
+            $mediaFile = $this->validateAndAddMedia($file, $this->allowedFileMimeTypes, $fileFormat);
 
             if ($name) {
-                $file->usingName($name);
+                $mediaFile->usingName($name);
 
-                $file->addCustomHeaders([
+                $mediaFile->addCustomHeaders([
                     'ContentDisposition' => 'attachment; filename="' . $name . '"'
                 ]);
             } else {
-                $file->addCustomHeaders([
+                $mediaFile->addCustomHeaders([
                     'ContentDisposition' => 'attachment'
                 ]);
             }
 
-            $file->toMediaCollection($collection);
+            $mediaFile->toMediaCollection($collection);
         } else {
             throw new \Exception('Class must implement HasMedia');
         }
@@ -351,7 +393,7 @@ trait BreadModelTrait
         ) {
             $this->media()->findOrFail($id)->delete();
         } else {
-            throw new \Exception('Class must HasMedia');
+            throw new \Exception('Class must implement HasMedia');
         }
     }
 

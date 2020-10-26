@@ -2,6 +2,7 @@
 
 namespace Bjerke\Bread;
 
+use Bjerke\Bread\Console\Commands\CleanStaleTusUploadsCommand;
 use Illuminate\Support\ServiceProvider;
 
 class BreadServiceProvider extends ServiceProvider
@@ -16,6 +17,12 @@ class BreadServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/config/bread.php' => config_path('bread.php'),
         ]);
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                CleanStaleTusUploadsCommand::class
+            ]);
+        }
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace Bjerke\Bread\Http\Controllers;
 
+use Bjerke\Bread\Tus\CorsMiddleware;
+use Bjerke\Bread\Tus\Server;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Str;
 use Bjerke\Bread\Models\BreadModel;
@@ -355,6 +357,18 @@ abstract class BreadController extends Controller
         }
 
         return $this->getModel()->getFieldDefinition();
+    }
+
+    public function tus(Request $request, $chunkId = null)
+    {
+        if (!class_exists('TusPhp\Tus\Server')) {
+            throw new \Exception('The composer package "ankitpokhrel/tus-php" needs to be installed to use TUS uploads');
+        }
+
+        $server = new Server($request, $chunkId, config('bread.tus_cache_adapter', 'file'));
+        $server->middleware()->add(CorsMiddleware::class);
+
+        return $server->serve()->send();
     }
 
     /**

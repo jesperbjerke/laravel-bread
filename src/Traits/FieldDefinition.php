@@ -987,7 +987,9 @@ trait FieldDefinition
                 'multiple' => $multiple,
                 'collection' => $name,
                 'mime_types' => (property_exists($this, 'allowedImageMimeTypes'))
-                    ? $this->allowedImageMimeTypes : ['image/jpeg']
+                    ? $this->allowedImageMimeTypes : ['image/jpeg'],
+                'tus' => false,
+                'tus_endpoint' => ''
             ]
         ], $options));
     }
@@ -1027,7 +1029,9 @@ trait FieldDefinition
                 'media_type' => 'files',
                 'multiple' => $multiple,
                 'collection' => $name,
-                'mime_types' => (property_exists($this, 'allowedFileMimeTypes')) ? $this->allowedFileMimeTypes : ['*']
+                'mime_types' => (property_exists($this, 'allowedFileMimeTypes')) ? $this->allowedFileMimeTypes : ['*'],
+                'tus' => false,
+                'tus_endpoint' => ''
             ]
         ], $options));
     }
