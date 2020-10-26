@@ -42,6 +42,9 @@ Route::patch('{id}', [UserController::class, 'update']); // Update user
 Route::delete('{id}', [UserController::class, 'delete']); // Delete user
 Route::delete('{id}/detach/{relatedModel}', [UserController::class, 'detach']); // Attach an existing model to be related to user
 Route::put('{id}/attach/{relatedModel}', [UserController::class, 'attach']); // Detach an existing related model from user
+
+// If you want to use TUS uploads add this route
+Route::any('tus/{chunkId?}', [UserController::class, 'tus']); // Handle TUS uploads
 ```
 
 Remember to only define the endpoints that you actually want to use. And set proper authentication and authorization rules.
@@ -124,3 +127,51 @@ class ProductController extends BreadController
 ### Saving files/images
 
 In order for the built-in functionality of storing files and/or images, this package requires the https://github.com/spatie/laravel-medialibrary to be installed and configured.
+
+Add files/images:
+```json
+{
+  "data" : {
+    "files" : { // Field key of the images/files
+      "base64" : "base64 encoded string representation of the image/file",
+      "name" : 'Filename',
+      "add" : true
+    }
+  }
+}
+```
+
+Remove files/images:
+```json
+{
+  "data" : {
+    "files" : { // Field key of the images/files
+      "id" : 1, // Id of the filemodel from media library
+      "remove" : true
+    }
+  }
+}
+```
+
+### TUS uploads
+
+There is build in functionality to support uploads using the [TUS protocol](https://tus.io/). To enable TUS uploads, you need to install the package https://github.com/ankitpokhrel/tus-php in addition to the media library package specified above.
+
+You can then use a TUS client like https://github.com/tus/tus-js-client or https://uppy.io/.
+
+When submitting the files, you send the unique upload key received from the TUS server (a UUID4 string) instead of base64. Note that it is expected that the file has already been uploaded through TUS  and exists on the server before this request is sent.
+```json
+{
+  "data" : {
+    "files" : { // Field key of the images/files
+      "tusKey" : "002f12d4-6949-4266-af06-675f653c0bdc",
+      "name" : 'Filename',
+      "add" : true
+    }
+  }
+}
+```
+
+#### Cleaning orphaned TUS files
+
+Add `$schedule->command('bread:clean-tus --force')->daily()` to your scheduler to automatically clean up orphaned/aborted files.
