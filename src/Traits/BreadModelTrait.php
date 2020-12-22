@@ -187,12 +187,6 @@ trait BreadModelTrait
         foreach ($rawAttributes as $fieldName => $fieldValue) {
             if (isset($flatFieldDefinition[$fieldName])) {
                 switch ($flatFieldDefinition[$fieldName]['type']) {
-                    case 'JSON':
-                        // Only encode if not already json
-                        if (!Strings::isJson($fieldValue)) {
-                            $rawAttributes[$fieldName] = json_encode($fieldValue);
-                        }
-                        break;
                     case 'ENUM':
                         if (is_array($fieldValue)) {
                             $rawAttributes[$fieldName] = implode(';', array_filter($fieldValue, static function ($val) {
