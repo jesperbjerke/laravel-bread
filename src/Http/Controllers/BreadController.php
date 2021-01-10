@@ -378,6 +378,11 @@ abstract class BreadController extends Controller
      */
     protected function getModelClass()
     {
+        // Make sure namespace is appended to provide backwards compatibility
+        if ($this->modelName && strpos($this->modelName, '\\') === false) {
+            $this->modelName = config('bread.model_namespace') . $this->modelName;
+        }
+
         if (!$this->modelName) {
             $this->modelName = config('bread.model_namespace') . substr(class_basename($this), 0, -10);
         }
