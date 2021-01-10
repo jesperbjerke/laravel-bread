@@ -25,7 +25,7 @@ abstract class BreadController extends Controller
     use ValidatesRequests;
 
     /**
-     * Holds model name connected to the controller as a string (non-namespaced)
+     * Holds fully qualified name for the model class connected to the controller as a string
      * Will be guessed based on controller name if null
      *
      * @var string|null
@@ -376,10 +376,10 @@ abstract class BreadController extends Controller
      *
      * @return string
      */
-    protected function getModelBaseName()
+    protected function getModelClass()
     {
         if (!$this->modelName) {
-            $this->modelName = substr(class_basename($this), 0, -10);
+            $this->modelName = config('bread.model_namespace') . substr(class_basename($this), 0, -10);
         }
 
         return $this->modelName;
@@ -395,7 +395,7 @@ abstract class BreadController extends Controller
      */
     protected function getModel($attributes = [], $connection = null)
     {
-        $namespacedModelName = config('bread.model_namespace') . $this->getModelBaseName();
+        $namespacedModelName = $this->getModelClass();
 
         /**
          * @var $model BreadModel
