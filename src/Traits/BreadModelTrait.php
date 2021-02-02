@@ -253,40 +253,49 @@ trait BreadModelTrait
     public function syncMediaFiles(array $files, $type = 'images', $collection = 'images')
     {
         if (!empty($files)) {
-            foreach ($files as $file) {
+            $filesToRemove = array_filter($files, static function ($file) {
+               return (isset($file['remove']) && $file['remove'] === true);
+            });
+            $filesToAdd = array_filter($files, static function ($file) {
+               return (isset($file['add']) && $file['add'] === true);
+            });
+
+            // We want to remove images first, to not hit potential collection limit when adding
+            foreach ($filesToRemove as $file) {
                 try {
-                    if (isset($file['add']) && $file['add'] === true) {
-                        switch ($type) {
-                            case 'images':
-                                if (isset($file['tusKey']) && $file['tusKey']) {
-                                    $this->addImage($file['tusKey'], $collection, 'TUS');
-                                } else {
-                                    $this->addImage($file['base64'], $collection, 'base64');
-                                }
-                                break;
-                            case 'files':
-                                if (isset($file['tusKey']) && $file['tusKey']) {
-                                    $this->addFile(
-                                        $file['base64'],
-                                        $file['name'] ?? null,
-                                        $collection,
-                                        'TUS'
-                                    );
-                                } else {
-                                    $this->addFile(
-                                        $file['base64'],
-                                        $file['name'] ?? null,
-                                        $collection,
-                                        'base64'
-                                    );
-                                }
-                                break;
-                        }
-                    } elseif (isset($file['remove']) && $file['remove'] === true) {
-                        switch ($type) {
-                            default:
-                                $this->removeMedia($file['id']);
-                        }
+                    $this->removeMedia($file['id']);
+                } catch (\Exception $e) {
+                    \Log::error($e->getMessage());
+                }
+            }
+
+            foreach ($filesToAdd as $file) {
+                try {
+                    switch ($type) {
+                        case 'images':
+                            if (isset($file['tusKey']) && $file['tusKey']) {
+                                $this->addImage($file['tusKey'], $collection, 'TUS');
+                            } else {
+                                $this->addImage($file['base64'], $collection, 'base64');
+                            }
+                            break;
+                        case 'files':
+                            if (isset($file['tusKey']) && $file['tusKey']) {
+                                $this->addFile(
+                                    $file['base64'],
+                                    $file['name'] ?? null,
+                                    $collection,
+                                    'TUS'
+                                );
+                            } else {
+                                $this->addFile(
+                                    $file['base64'],
+                                    $file['name'] ?? null,
+                                    $collection,
+                                    'base64'
+                                );
+                            }
+                            break;
                     }
                 } catch (\Exception $e) {
                     \Log::error($e->getMessage());
