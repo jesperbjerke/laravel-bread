@@ -23,6 +23,8 @@ php artisan vendor:publish --provider="Bjerke\Bread\BreadServiceProvider"
 
 You will now have a `bread.php` config file in `/config` where you can change the configuration values.
 
+Other configuration items are default field groups available to all models as well as some options related to TUS uploads.
+
 ## Usage
 
 To start using this package, you need to create your own controller class, name it in singular matching the model it's affecting.
@@ -54,18 +56,23 @@ If you want to provide field definitions and automatic validation etc, you need 
 ```php
 class User
 {
-    use FieldDefinition,
-        QueryBuilderModelTrait,
-        BreadModelTrait;
+    use FieldDefinition;
+    use QueryBuilderModelTrait;
+    use BreadModelTrait;
 
-    protected function define()
+    protected function define(DefinitionBuilder $definition): DefinitionBuilder
     {
-        $this->addFieldText('first_name', Lang::get('fields.first_name'), self::$FIELD_REQUIRED);
-        $this->addFieldText('last_name', Lang::get('fields.last_name'), self::$FIELD_REQUIRED);
-        
-        $this->addFieldEmail('email', Lang::get('fields.email'), self::$FIELD_REQUIRED, [
-            'validation' => 'email|unique:users,email' . (($this->exists) ? (',' . $this->id) : '')
+        $definition->addFields([
+            (new TextField('first_name'))->label(Lang::get('fields.first_name'))->required(true),
+
+            (new TextField('last_name'))->label(Lang::get('fields.last_name'))->required(true),
+
+            (new EmailField('email'))
+                ->label(Lang::get('fields.email'))
+                ->required(true)
+                ->addValidation('unique:users,email' . (($this->exists) ? (',' . $this->id) : ''))
         ]);
+        return $definition;
     }
 }
 ```
@@ -132,9 +139,9 @@ Add files/images:
 ```json
 {
   "data" : {
-    "files" : { // Field key of the images/files
+    "files" : {
       "base64" : "base64 encoded string representation of the image/file",
-      "name" : 'Filename',
+      "name" : "Filename",
       "add" : true
     }
   }
@@ -145,8 +152,8 @@ Remove files/images:
 ```json
 {
   "data" : {
-    "files" : { // Field key of the images/files
-      "id" : 1, // Id of the filemodel from media library
+    "files" : {
+      "id" : 1,
       "remove" : true
     }
   }
@@ -163,9 +170,9 @@ When submitting the files, you send the unique upload key received from the TUS 
 ```json
 {
   "data" : {
-    "files" : { // Field key of the images/files
+    "files" : {
       "tusKey" : "002f12d4-6949-4266-af06-675f653c0bdc",
-      "name" : 'Filename',
+      "name" : "Filename",
       "add" : true
     }
   }
