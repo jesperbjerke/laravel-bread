@@ -2,7 +2,6 @@
 
 namespace Bjerke\Bread\Console\Commands;
 
-use Bjerke\Bread\Tus\Server;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,15 +24,16 @@ class CleanStaleTusUploadsCommand extends Command
     /**
      * Execute the console command
      */
-    public function handle()
+    public function handle(): void
     {
+        $disk = Storage::disk(config('bread.tus_disk'));
+
         if (
             $this->option('force') ||
             // phpcs:ignore Generic.Files.LineLength.TooLong
-            $this->confirm('This will remove all directories created in ' . $disk->path('tus') . ' older than '. config('bread.tus_stale_max_age') .'. Proceed?')
+            $this->confirm('This will remove all directories created in ' . $disk->path('tus') . ' older than ' . config('bread.tus_stale_max_age') . '. Proceed?')
         ) {
             $this->info('Removing uploads older than ' . config('bread.tus_stale_max_age'));
-            $disk = Storage::disk(config('bread.tus_disk'));
             $directories = $disk->directories('tus');
             $maxAge = strtotime(config('bread.tus_stale_max_age'));
 

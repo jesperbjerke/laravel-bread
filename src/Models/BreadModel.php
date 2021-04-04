@@ -15,14 +15,13 @@ use Bjerke\Bread\Traits\FieldDefinition;
  */
 abstract class BreadModel extends Model
 {
-
-    use FieldDefinition, QueryBuilderModelTrait, BreadModelTrait;
+    use FieldDefinition;
+    use QueryBuilderModelTrait;
+    use BreadModelTrait;
 
     public function __construct(array $attributes = [])
     {
-        if (self::$defineOnConstruct &&
-            empty($this->definition)
-        ) {
+        if (self::$defineOnConstruct && !$this->isDefined()) {
             $this->compileDefinition();
         }
 

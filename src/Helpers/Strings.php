@@ -4,7 +4,6 @@ namespace Bjerke\Bread\Helpers;
 
 class Strings
 {
-
     /**
      * Check if something is a valid Json string
      *

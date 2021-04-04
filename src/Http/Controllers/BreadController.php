@@ -4,6 +4,7 @@ namespace Bjerke\Bread\Http\Controllers;
 
 use Bjerke\Bread\Tus\CorsMiddleware;
 use Bjerke\Bread\Tus\Server;
+use Closure;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Support\Str;
 use Bjerke\Bread\Models\BreadModel;
@@ -21,7 +22,6 @@ use Bjerke\ApiQueryBuilder\QueryBuilder;
 
 abstract class BreadController extends Controller
 {
-
     use ValidatesRequests;
 
     /**
@@ -30,18 +30,18 @@ abstract class BreadController extends Controller
      *
      * @var string|null
      */
-    protected $modelName;
+    protected ?string $modelName;
 
     /**
      * Queries all entries
      *
      * @param Request       $request
-     * @param \Closure|null $applyQuery Apply custom query before fetching
+     * @param Closure|null $applyQuery Apply custom query before fetching
      *
      * @return LengthAwarePaginator|Builder[]|Collection
      * @throws \Exception
      */
-    public function index(Request $request, $applyQuery = null)
+    public function index(Request $request, ?Closure $applyQuery = null)
     {
         $queryBuilder = new QueryBuilder($this->getModel(), $request);
 
@@ -51,7 +51,8 @@ abstract class BreadController extends Controller
             $applyQuery($query);
         }
 
-        if (($pagination = $request->input('paginate')) !== null &&
+        if (
+            ($pagination = $request->input('paginate')) !== null &&
             ($pagination === false || $pagination === 'false' || $pagination === '0')
         ) {
             return $query->get();
@@ -66,13 +67,13 @@ abstract class BreadController extends Controller
      * View single resource
      *
      * @param Request       $request
-     * @param int           $id
-     * @param \Closure|null $applyQuery Apply custom query before fetching
+     * @param int|string    $id
+     * @param Closure|null $applyQuery Apply custom query before fetching
      *
      * @return Model
      * @throws NotFoundHttpException
      */
-    public function view(Request $request, $id, $applyQuery = null)
+    public function view(Request $request, $id, ?Closure $applyQuery = null): Model
     {
         if ($applyQuery instanceof \Closure) {
             $query = $this->getModel()->newQuery();
@@ -119,13 +120,17 @@ abstract class BreadController extends Controller
      * @param Request $request
      * @param array   $with
      * @param array   $manualAttributes
-     * @param \Closure|null $beforeSave Apply custom logic before save method is called on model
+     * @param Closure|null $beforeSave Apply custom logic before save method is called on model
      *
      * @return bool|Model The newly created model
      * @throws ValidationException
      */
-    public function create(Request $request, $with = [], $manualAttributes = [], $beforeSave = null)
-    {
+    public function create(
+        Request $request,
+        array $with = [],
+        array $manualAttributes = [],
+        ?Closure $beforeSave = null
+    ) {
         $model = $this->getModel();
         $attributes = RequestParams::getParams($request);
         $fillables = array_merge(
@@ -153,17 +158,22 @@ abstract class BreadController extends Controller
      * Update existing entry
      *
      * @param Request       $request
-     * @param int           $id
+     * @param int|string    $id
      * @param array         $with Eager load relations
-     * @param \Closure|null $applyQuery Apply custom query before fetching
-     * @param \Closure|null $beforeSave Apply custom logic before save method is called on model
+     * @param Closure|null $applyQuery Apply custom query before fetching
+     * @param Closure|null $beforeSave Apply custom logic before save method is called on model
      *
      * @return bool|null|Model The newly updated model
      * @throws NotFoundHttpException|HttpException|ValidationException
      */
-    public function update(Request $request, $id, $with = [], $applyQuery = null, $beforeSave = null)
-    {
-        if ($applyQuery instanceof \Closure) {
+    public function update(
+        Request $request,
+        $id,
+        array $with = [],
+        ?Closure $applyQuery = null,
+        ?Closure $beforeSave = null
+    ) {
+        if ($applyQuery instanceof Closure) {
             $query = $this->getModel()->newQuery();
             $query->where('id', $id);
             $applyQuery($query);
@@ -196,16 +206,20 @@ abstract class BreadController extends Controller
     /**
      * Delete existing entry
      *
-     * @param Request       $request
-     * @param int           $id
-     * @param \Closure|null $applyQuery Apply custom query before fetching
-     * @param \Closure|null $beforeDelete Apply custom logic before delete method is called on model
+     * @param Request      $request
+     * @param int|string   $id
+     * @param Closure|null $applyQuery Apply custom query before fetching
+     * @param Closure|null $beforeDelete Apply custom logic before delete method is called on model
      *
      * @throws NotFoundHttpException|\Exception
      */
-    public function delete(Request $request, $id, $applyQuery = null, $beforeDelete = null)
-    {
-        if ($applyQuery instanceof \Closure) {
+    public function delete(
+        Request $request,
+        $id,
+        ?Closure $applyQuery = null,
+        ?Closure $beforeDelete = null
+    ): void {
+        if ($applyQuery instanceof Closure) {
             $query = $this->getModel()->newQuery();
             $query->where('id', $id);
             $applyQuery($query);
@@ -228,16 +242,21 @@ abstract class BreadController extends Controller
      * Expects $_GET['related_ids'] to be an array of id's to detach, OR $_GET['related_id'] if only detaching one
      *
      * @param Request       $request
-     * @param int           $id            Model id to perform detach on
+     * @param int|string    $id            Model id to perform detach on
      * @param string        $relation      Relation to detach
-     * @param \Closure|null $applyQuery Apply custom query before fetching
-     * @param \Closure|null $beforeDetach Apply custom logic before model is detached
+     * @param Closure|null $applyQuery Apply custom query before fetching
+     * @param Closure|null $beforeDetach Apply custom logic before model is detached
      *
      * @throws NotFoundHttpException|\Exception
      */
-    public function detach(Request $request, $id, $relation, $applyQuery = null, $beforeDetach = null)
-    {
-        if ($applyQuery instanceof \Closure) {
+    public function detach(
+        Request $request,
+        $id,
+        string $relation,
+        ?Closure $applyQuery = null,
+        ?Closure $beforeDetach = null
+    ): void {
+        if ($applyQuery instanceof Closure) {
             $query = $this->getModel()->newQuery();
             $query->where('id', $id);
             $applyQuery($query);
@@ -265,7 +284,7 @@ abstract class BreadController extends Controller
         }
 
         if (!empty($relatedIds)) {
-            if ($beforeDetach instanceof \Closure) {
+            if ($beforeDetach instanceof Closure) {
                 $beforeDetach($model, $relationType, $relatedIds);
             }
 
@@ -289,16 +308,19 @@ abstract class BreadController extends Controller
      * Expects $_GET['related_ids'] to be an array of id's to attach, OR $_GET['related_id'] if only attaching one
      *
      * @param Request       $request
-     * @param int           $id            Model id to perform attach on
-     * @param string        $relation      Relation to attach
-     * @param \Closure|null $applyQuery Apply custom query before fetching
-     * @param \Closure|null $beforeAttach Apply custom logic before model is attached
-     *
-     * @throws NotFoundHttpException|\Exception
+     * @param int|string    $id           Model id to perform attach on
+     * @param string        $relation     Relation to attach
+     * @param Closure|null  $applyQuery   Apply custom query before fetching
+     * @param Closure|null $beforeAttach Apply custom logic before model is attached
      */
-    public function attach(Request $request, $id, $relation, $applyQuery = null, $beforeAttach = null)
-    {
-        if ($applyQuery instanceof \Closure) {
+    public function attach(
+        Request $request,
+        $id,
+        string $relation,
+        ?Closure $applyQuery = null,
+        ?Closure $beforeAttach = null
+    ): void {
+        if ($applyQuery instanceof Closure) {
             $query = $this->getModel()->newQuery();
             $query->where('id', $id);
             $applyQuery($query);
@@ -347,10 +369,8 @@ abstract class BreadController extends Controller
 
     /**
      * Returns full field definition
-     *
-     * @return array
      */
-    public function definition(Request $request)
+    public function definition(Request $request): array
     {
         if ($request->get('flat', false)) {
             return $this->getModel()->getFlatFieldDefinition();
@@ -359,10 +379,12 @@ abstract class BreadController extends Controller
         return $this->getModel()->getFieldDefinition();
     }
 
-    public function tus(Request $request, $chunkId = null)
+    public function tus(Request $request, ?string $chunkId = null)
     {
         if (!class_exists('TusPhp\Tus\Server')) {
-            throw new \Exception('The composer package "ankitpokhrel/tus-php" needs to be installed to use TUS uploads');
+            throw new \Exception(
+                'The composer package "ankitpokhrel/tus-php" needs to be installed to use TUS uploads'
+            );
         }
 
         $server = new Server($request, $chunkId, config('bread.tus_cache_adapter', 'file'));
@@ -373,10 +395,8 @@ abstract class BreadController extends Controller
 
     /**
      * Returns the model name based on either controller name or modelName property
-     *
-     * @return string
      */
-    protected function getModelClass()
+    protected function getModelClass(): ?string
     {
         // Make sure namespace is appended to provide backwards compatibility
         if ($this->modelName && strpos($this->modelName, '\\') === false) {
@@ -392,13 +412,8 @@ abstract class BreadController extends Controller
 
     /**
      * Creates and returns a new model instance from controller specified model
-     *
-     * @param array  $attributes
-     * @param string $connection
-     *
-     * @return BreadModel
      */
-    protected function getModel($attributes = [], $connection = null)
+    protected function getModel(array $attributes = [], ?string $connection = null): Model
     {
         $namespacedModelName = $this->getModelClass();
 
@@ -419,7 +434,7 @@ abstract class BreadController extends Controller
      *
      * @throws ValidationException
      */
-    protected function validateArray($params, $rules)
+    protected function validateArray(array $params, array $rules): void
     {
         $Validator = $this->getValidationFactory()->make($params, $rules);
 
@@ -438,7 +453,7 @@ abstract class BreadController extends Controller
      *
      * @throws ValidationException
      */
-    protected function validateMetaFields($model, $relation, $attributes, $fieldsConfig)
+    protected function validateMetaFields(Model $model, string $relation, array $attributes, array $fieldsConfig): void
     {
         $existingMeta = [];
 
@@ -478,9 +493,11 @@ abstract class BreadController extends Controller
      * @param array   $attributes
      * @param array   $fieldsConfig
      */
-    protected function saveMetaFields($model, $relation, $attributes, $fieldsConfig)
+    protected function saveMetaFields(Model $model, string $relation, array $attributes, array $fieldsConfig): void
     {
-        if (!$model->allowRelationChanges($relation)){ return; }
+        if (!$model->allowRelationChanges($relation)) {
+            return;
+        }
 
         // Handle nested groups
         $fields = [];
@@ -516,10 +533,10 @@ abstract class BreadController extends Controller
     /**
      * Syncs provided relations on model with sent attributes
      *
-     * @param BreadModel    $model
-     * @param array         $attributes
+     * @param Model $model
+     * @param array $attributes
      */
-    protected function syncRelations($model, $attributes)
+    protected function syncRelations(Model $model, array $attributes): void
     {
         $relationFields = $model->getRemoteRelationFields();
 
@@ -527,7 +544,9 @@ abstract class BreadController extends Controller
             $attr = collect($attributes);
             foreach ($relationFields as $relationField) {
                 if ($attr->has($relationField['name'])) {
-                    if (!$model->allowRelationChanges($relationField['extra_data']['relation'])){ continue; }
+                    if (!$model->allowRelationChanges($relationField['extra_data']['relation'])) {
+                        continue;
+                    }
 
                     $relationValues = [];
 
@@ -548,46 +567,67 @@ abstract class BreadController extends Controller
     /**
      * Validates data that is outside of the model scope (on-save validation) etc
      *
-     * @param Model $model
-     * @params array $attributes
+     * @param Model      $model
+     * @param array      $attributes
+     * @param array|null $definition
      *
+     * @return Model
      * @throws ValidationException
      */
-    protected function beforeModelSave($model, $attributes, $definition = null)
+    protected function beforeModelSave(Model $model, array $attributes, ?array $definition = null): Model
     {
         $definition = ($definition) ?? $model->getFlatFieldDefinition();
         $metaFields = array_filter($definition, static function ($field) use ($attributes) {
-            return $field['type'] === 'META' && isset($attributes[$field['name']]) && !empty($attributes[$field['name']]);
+            return $field['type'] === 'META' &&
+                   isset($attributes[$field['name']]) &&
+                   !empty($attributes[$field['name']]);
         });
 
         if (!empty($metaFields)) {
             foreach ($metaFields as $field) {
                 if (isset($field['extra_data']['fields'], $field['extra_data']['relation'])) {
-                    $this->validateMetaFields($model, $field['extra_data']['relation'], $attributes[$field['name']], $field['extra_data']['fields']);
+                    $this->validateMetaFields(
+                        $model,
+                        $field['extra_data']['relation'],
+                        $attributes[$field['name']],
+                        $field['extra_data']['fields']
+                    );
                 }
             }
         }
+
+        return $model;
     }
 
     /**
      * Saves data that is outside of the model scope (meta fields, relations, media etc)
      *
-     * @param Model $model
-     * @params array $attributes
+     * @param Model      $model
+     * @param array      $attributes
+     * @param array|null $definition
      *
      * @return mixed
+     *
+     * @params array $attributes
      */
-    protected function afterModelSave($model, $attributes, $definition = null)
+    protected function afterModelSave(Model $model, array $attributes, ?array $definition = null): Model
     {
         $definition = ($definition) ?? $model->getFlatFieldDefinition();
         $metaFields = array_filter($definition, static function ($field) use ($attributes) {
-            return $field['type'] === 'META' && isset($attributes[$field['name']]) && !empty($attributes[$field['name']]);
+            return $field['type'] === 'META' &&
+                   isset($attributes[$field['name']]) &&
+                   !empty($attributes[$field['name']]);
         });
 
         if (!empty($metaFields)) {
             foreach ($metaFields as $field) {
                 if (isset($field['extra_data']['fields'], $field['extra_data']['relation'])) {
-                    $this->saveMetaFields($model, $field['extra_data']['relation'], $attributes[$field['name']], $field['extra_data']['fields']);
+                    $this->saveMetaFields(
+                        $model,
+                        $field['extra_data']['relation'],
+                        $attributes[$field['name']],
+                        $field['extra_data']['fields']
+                    );
                 }
             }
         }
@@ -595,7 +635,9 @@ abstract class BreadController extends Controller
         $this->syncRelations($model, $attributes);
 
         $mediaFields = array_filter($definition, static function ($field) use ($attributes) {
-            return $field['type'] === 'MEDIA' && isset($attributes[$field['name']]) && !empty($attributes[$field['name']]);
+            return $field['type'] === 'MEDIA' &&
+                   isset($attributes[$field['name']]) &&
+                   !empty($attributes[$field['name']]);
         });
 
         if (!empty($mediaFields)) {
@@ -603,10 +645,13 @@ abstract class BreadController extends Controller
                 $model->syncMediaFiles(
                     $attributes[$field['name']],
                     $field['extra_data']['media_type'],
-                    $field['extra_data']['collection']
+                    $field['extra_data']['collection'],
+                    $field['extra_data']['mime_types']
                 );
             }
         }
+
+        return $model;
     }
 
     /**
@@ -618,7 +663,7 @@ abstract class BreadController extends Controller
      *
      * @return Model
      */
-    protected function loadFresh(Request $request, $model, $with = [])
+    protected function loadFresh(Request $request, Model $model, array $with = []): Model
     {
         if (($requestedWith = $request->get('with')) !== null) {
             if (is_string($requestedWith)) {

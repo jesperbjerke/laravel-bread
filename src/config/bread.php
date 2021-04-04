@@ -28,7 +28,7 @@ return [
     | The disk where TUS will upload files to
     |--------------------------------------------------------------------------
     |
-    | Needs to be a disk that is defined in your filestystem config
+    | Needs to be a disk that is defined in your filesystem config
     |
     */
     'tus_disk' => env('TUS_DISK', 'public'),
@@ -52,6 +52,43 @@ return [
     | remove. Needs to be a string valid to strtotime
     |
     */
-    'tus_stale_max_age' => env('TUS_STALE_MAX_AGE', '-2 days')
+    'tus_stale_max_age' => env('TUS_STALE_MAX_AGE', '-2 days'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default available field groups for all fields
+    |--------------------------------------------------------------------------
+    |
+    | Used to group fields in the field definitions
+    |
+    */
+    'default_field_groups' => [
+        'general' => [
+            'key' => 'general',
+            'label' => '',
+            'description' => '',
+            'tabbed' => false, // Enables/disabled tabbed interface, provide key of tab-group as string to enable
+            'order' => 0,
+            'fields' => []
+        ],
+        'relations' => [
+            'key' => 'relations',
+            'label' => '',
+            'description' => '',
+            'tabbed' => false, // Enables/disabled tabbed interface, provide key of tab-group as string to enable
+            'order' => 100,
+            'fields' => []
+        ]
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default field group for all fields
+    |--------------------------------------------------------------------------
+    |
+    | Field group to use if no group is set
+    |
+    */
+    'default_field_group' => 'general'
 
 ];

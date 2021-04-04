@@ -10,7 +10,7 @@ use TusPhp\Tus\Server as TusServer;
 
 class Server extends TusServer
 {
-    public function __construct(Request $request, $chunkId = null, $cacheAdapter = 'file')
+    public function __construct(Request $request, ?string $chunkId = null, string $cacheAdapter = 'file')
     {
         parent::__construct($cacheAdapter);
 
@@ -33,10 +33,8 @@ class Server extends TusServer
         $disk = Storage::disk(config('bread.tus_disk'));
         $uploadDir = 'tus/' . $uploadKey;
 
-        if ($makeDir) {
-            if (!$disk->makeDirectory($uploadDir)) {
-                throw new \Exception('Could not create directory: ' . $disk->path($uploadDir));
-            }
+        if ($makeDir && !$disk->makeDirectory($uploadDir)) {
+            throw new \Exception('Could not create directory: ' . $disk->path($uploadDir));
         }
 
         return $disk->path($uploadDir);

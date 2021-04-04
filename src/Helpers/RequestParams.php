@@ -15,10 +15,6 @@ class RequestParams
 
     /**
      * Extracts all request params
-     *
-     * @param Request $request
-     *
-     * @return array|mixed
      */
     public static function getParams(Request $request)
     {

@@ -6,8 +6,6 @@ use Bjerke\Bread\Tus\Server as TusServer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator;
 use Bjerke\Bread\Helpers\Strings;
@@ -15,63 +13,28 @@ use Bjerke\Bread\Models\BreadModel;
 
 trait BreadModelTrait
 {
-
     /**
      * Validation rules to apply before saving
-     *
-     * @var array
      */
-    protected $rules = [];
+    protected array $rules = [];
 
     /**
      * Determines if validation should be performed automatically before saving
-     * @var bool
      */
-    public $validateOnSave = true;
+    public bool $validateOnSave = true;
 
     /**
      * Determines if definition should be compiled as soon as the models construct method is called
-     * @var bool
      */
-    public static $defineOnConstruct = false;
+    public static bool $defineOnConstruct = false;
 
     /**
      * Determines if definition should be forced to recompile every time the model is saved
      * Can be useful is saving multiple versions which have dynamic data in the definition
-     * @var bool
      */
-    public static $forceDefineOnSave = false;
+    public static bool $forceDefineOnSave = false;
 
-    protected $allowedFileMimeTypes = [
-        'image/jpeg',
-        'image/png',
-        'application/msword', // doc
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-excel', // xls
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
-        'application/vnd.ms-powerpoint', // ppt
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation', // pptx
-        'application/vnd.oasis.opendocument.text', // odt
-        'application/vnd.oasis.opendocument.presentation', // odp
-        'application/vnd.oasis.opendocument.spreadsheet', // ods
-        'application/vnd.apple.keynote', // Apple Pages
-        'application/x-iwork-pages-sffpages', // Apple Pages
-        'application/x-iwork-keynote-sffkey', // Apple Keynote
-        'application/vnd.apple.pages', // Apple Keynote
-        'application/x-iwork-numbers-sffnumbers', // Apple Numbers
-        'application/vnd.apple.numbers', // Apple Numbers
-        'text/plain',
-        'text/csv',
-        'application/pdf',
-        'application/zip'
-    ];
-    protected $allowedImageMimeTypes = [
-        'image/jpeg',
-        'image/png'
-    ];
-
-    public static function boot()
+    public static function boot(): void
     {
         parent::boot();
 
@@ -92,12 +55,8 @@ trait BreadModelTrait
 
     /**
      * Runs validation rules found in $this->rules against current model attributes
-     *
-     * @return \Illuminate\Validation\Validator
-     *
-     * @throws ValidationException
      */
-    public function validate()
+    public function validate(): \Illuminate\Validation\Validator
     {
         $fillables = $this->getFillable();
         $newAttributes = $this->transformAttributesForValidation($this->getAttributes());
@@ -108,13 +67,13 @@ trait BreadModelTrait
             return (in_array($fieldKey, $attributeKeys, true) || in_array($fieldKey, $fillables, true));
         }, ARRAY_FILTER_USE_KEY);
 
-        $Validator = $this->applyBeforeValidation(Validator::make($newAttributes, $rules), $rules, $newAttributes);
+        $validator = $this->applyBeforeValidation(Validator::make($newAttributes, $rules), $rules, $newAttributes);
 
-        if ($Validator->fails()) {
-            throw new ValidationException($Validator);
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
         }
 
-        return $Validator;
+        return $validator;
     }
 
     /**
@@ -130,8 +89,8 @@ trait BreadModelTrait
      */
     public function applyBeforeValidation(
         \Illuminate\Validation\Validator $validator,
-        $rules,
-        $attributes
+        array $rules,
+        array $attributes
     ): \Illuminate\Validation\Validator {
         return $validator;
     }
@@ -140,11 +99,11 @@ trait BreadModelTrait
      * Reformats attributes before filling model
      *
      * @param array $attributes
-     * @param boolean $filterFillable Remove all attributes that are not fillable on the model
+     * @param bool $filterFillable Remove all attributes that are not fillable on the model
      *
      * @return array
      */
-    public function prepareAttributes($attributes = [], $filterFillable = true)
+    public function prepareAttributes(array $attributes = [], bool $filterFillable = true): array
     {
         if (!$this->isDefined()) {
             $this->compileDefinition();
@@ -179,22 +138,19 @@ trait BreadModelTrait
      *
      * @return array
      */
-    public function transformAttributes(array $rawAttributes)
+    public function transformAttributes(array $rawAttributes): array
     {
         $flatFieldDefinition = $this->getFlatFieldDefinition();
 
-        //$originalAttributes = $this->getAttributes();
         foreach ($rawAttributes as $fieldName => $fieldValue) {
-            if (isset($flatFieldDefinition[$fieldName])) {
-                switch ($flatFieldDefinition[$fieldName]['type']) {
-                    case 'ENUM':
-                        if (is_array($fieldValue)) {
-                            $rawAttributes[$fieldName] = implode(';', array_filter($fieldValue, static function ($val) {
-                                return $val !== '' && $val !== null;
-                            }));
-                        }
-                        break;
-                }
+            if (
+                isset($flatFieldDefinition[$fieldName]['type']) &&
+                $flatFieldDefinition[$fieldName]['type'] === 'ENUM' &&
+                is_array($fieldValue)
+            ) {
+                $rawAttributes[$fieldName] = implode(';', array_filter($fieldValue, static function ($val) {
+                    return $val !== '' && $val !== null;
+                }));
             }
         }
 
@@ -208,32 +164,30 @@ trait BreadModelTrait
      *
      * @return array
      */
-    public function transformAttributesForValidation(array $rawAttributes)
+    public function transformAttributesForValidation(array $rawAttributes): array
     {
         $flatFieldDefinition = $this->getFlatFieldDefinition();
 
         foreach ($rawAttributes as $fieldName => $fieldValue) {
-            if (isset($flatFieldDefinition[$fieldName])) {
-                switch ($flatFieldDefinition[$fieldName]['type']) {
-                    case 'JSON':
-                        // Only encode if not already json
-                        if (Strings::isJson($fieldValue)) {
-                            $rawAttributes[$fieldName] = json_decode($fieldValue, true);
-                        }
-                        break;
-                }
+            if (
+                isset($flatFieldDefinition[$fieldName]['type']) &&
+                $flatFieldDefinition[$fieldName]['type'] === 'JSON' &&
+                Strings::isJson($fieldValue)
+            ) {
+                // Only encode if not already json
+                $rawAttributes[$fieldName] = json_decode($fieldValue, true);
             }
         }
 
         return $rawAttributes;
     }
 
-    public function getRules()
+    public function getRules(): array
     {
         return $this->rules;
     }
 
-    public function setRules($rules)
+    public function setRules($rules): void
     {
         $this->rules = $rules;
     }
@@ -250,56 +204,71 @@ trait BreadModelTrait
         return false;
     }
 
-    public function syncMediaFiles(array $files, $type = 'images', $collection = 'images')
-    {
-        if (!empty($files)) {
-            $filesToRemove = array_filter($files, static function ($file) {
-               return (isset($file['remove']) && $file['remove'] === true);
-            });
-            $filesToAdd = array_filter($files, static function ($file) {
-               return (isset($file['add']) && $file['add'] === true);
-            });
+    public function syncMediaFiles(
+        array $files,
+        string $type = 'images',
+        string $collection = 'images',
+        array $allowedMimeTypes = []
+    ): void {
+        if (empty($files)) {
+            return;
+        }
 
-            // We want to remove images first, to not hit potential collection limit when adding
-            foreach ($filesToRemove as $file) {
-                try {
-                    $this->removeMedia($file['id']);
-                } catch (\Exception $e) {
-                    \Log::error($e->getMessage());
-                }
+        $filesToRemove = array_filter($files, static function ($file) {
+            return (isset($file['remove']) && $file['remove'] === true);
+        });
+        $filesToAdd = array_filter($files, static function ($file) {
+            return (isset($file['add']) && $file['add'] === true);
+        });
+
+        // We want to remove images first, to not hit potential collection limit when adding
+        foreach ($filesToRemove as $file) {
+            try {
+                $this->removeMedia($file['id']);
+            } catch (\Exception $e) {
+                \Log::error($e->getMessage());
             }
+        }
 
-            foreach ($filesToAdd as $file) {
-                try {
-                    switch ($type) {
-                        case 'images':
-                            if (isset($file['tusKey']) && $file['tusKey']) {
-                                $this->addImage($file['tusKey'], $collection, 'TUS');
-                            } else {
-                                $this->addImage($file['base64'], $collection, 'base64');
-                            }
-                            break;
-                        case 'files':
-                            if (isset($file['tusKey']) && $file['tusKey']) {
-                                $this->addFile(
-                                    $file['base64'],
-                                    $file['name'] ?? null,
-                                    $collection,
-                                    'TUS'
-                                );
-                            } else {
-                                $this->addFile(
-                                    $file['base64'],
-                                    $file['name'] ?? null,
-                                    $collection,
-                                    'base64'
-                                );
-                            }
-                            break;
+        foreach ($filesToAdd as $file) {
+            try {
+                if ($type === 'images') {
+                    if (isset($file['tusKey']) && $file['tusKey']) {
+                        $this->addImage(
+                            $file['tusKey'],
+                            $collection,
+                            'TUS',
+                            $allowedMimeTypes
+                        );
+                    } else {
+                        $this->addImage(
+                            $file['base64'],
+                            $collection,
+                            'base64',
+                            $allowedMimeTypes
+                        );
                     }
-                } catch (\Exception $e) {
-                    \Log::error($e->getMessage());
+                } elseif ($type === 'files') {
+                    if (isset($file['tusKey']) && $file['tusKey']) {
+                        $this->addFile(
+                            $file['base64'],
+                            $file['name'] ?? null,
+                            $collection,
+                            'TUS',
+                            $allowedMimeTypes
+                        );
+                    } else {
+                        $this->addFile(
+                            $file['base64'],
+                            $file['name'] ?? null,
+                            $collection,
+                            'base64',
+                            $allowedMimeTypes
+                        );
+                    }
                 }
+            } catch (\Exception $e) {
+                \Log::error($e->getMessage());
             }
         }
     }
@@ -314,8 +283,11 @@ trait BreadModelTrait
      *
      * @return \Spatie\MediaLibrary\MediaCollections\FileAdder
      */
-    public function validateAndAddMedia(string $file, array $allowedMimeTypes, $fileFormat = 'base64')
-    {
+    public function validateAndAddMedia(
+        string $file,
+        array $allowedMimeTypes,
+        string $fileFormat = 'base64'
+    ): \Spatie\MediaLibrary\MediaCollections\FileAdder {
         if ($fileFormat === 'base64') {
             $mediaFile = $this->addMediaFromBase64($file, $allowedMimeTypes);
         } else {
@@ -330,18 +302,30 @@ trait BreadModelTrait
     /**
      * Add image to collection from base64 string, is based on the field config from FieldDefintion,
      *
-     * @param string $file Either Base64 string representation of the image to add or TUS upload key
+     * @param string $file       Either Base64 string representation of the image to add or TUS upload key
      * @param string $collection Specific collection to add the image to
      * @param string $fileFormat A string representing the format the file is. Either base64 or TUS
+     * @param array  $allowedMimeTypes
      *
+     * @throws \Spatie\MediaLibrary\MediaCollections\Exceptions\FileDoesNotExist
+     * @throws \Spatie\MediaLibrary\MediaCollections\Exceptions\FileIsTooBig
      * @throws \Exception
      */
-    public function addImage($file, $collection = 'images', $fileFormat = 'base64')
-    {
-        if ($this instanceof \Spatie\MediaLibrary\HasMedia ||
+    public function addImage(
+        string $file,
+        string $collection = 'images',
+        string $fileFormat = 'base64',
+        array $allowedMimeTypes = []
+    ): void {
+        if (
+            $this instanceof \Spatie\MediaLibrary\HasMedia ||
             $this instanceof \Spatie\MediaLibrary\HasMedia\HasMedia
         ) {
-            $this->validateAndAddMedia($file, $this->allowedImageMimeTypes, $fileFormat)->toMediaCollection($collection);
+            $this->validateAndAddMedia(
+                $file,
+                $allowedMimeTypes,
+                $fileFormat
+            )->toMediaCollection($collection);
         } else {
             throw new \Exception('Class must implement HasMedia');
         }
@@ -350,19 +334,32 @@ trait BreadModelTrait
     /**
      * Add file to collection from base64 string, is based on the field config from FieldDefintion,
      *
-     * @param string $file Either Base64 string representation of the file to add or TUS upload key
-     * @param string $name Optional "display name", otherwise will use filename that is generated automatically
-     * @param string $collection Specific collection to add the file to
-     * @param string $fileFormat A string representing the format the file is. Either base64 or TUS
+     * @param string      $file Either Base64 string representation of the file to add or TUS upload key
+     * @param string|null $name Optional "display name", otherwise will use filename that is generated automatically
+     * @param string      $collection Specific collection to add the file to
+     * @param string      $fileFormat A string representing the format the file is. Either base64 or TUS
+     * @param array       $allowedMimeTypes
      *
+     * @throws \Spatie\MediaLibrary\MediaCollections\Exceptions\FileDoesNotExist
+     * @throws \Spatie\MediaLibrary\MediaCollections\Exceptions\FileIsTooBig
      * @throws \Exception
      */
-    public function addFile($file, $name = null, $collection = 'files', $fileFormat = 'base64')
-    {
-        if ($this instanceof \Spatie\MediaLibrary\HasMedia ||
+    public function addFile(
+        string $file,
+        string $name = null,
+        string $collection = 'files',
+        string $fileFormat = 'base64',
+        array $allowedMimeTypes = []
+    ): void {
+        if (
+            $this instanceof \Spatie\MediaLibrary\HasMedia ||
             $this instanceof \Spatie\MediaLibrary\HasMedia\HasMedia
         ) {
-            $mediaFile = $this->validateAndAddMedia($file, $this->allowedFileMimeTypes, $fileFormat);
+            $mediaFile = $this->validateAndAddMedia(
+                $file,
+                $allowedMimeTypes,
+                $fileFormat
+            );
 
             if ($name) {
                 $mediaFile->usingName($name);
@@ -385,13 +382,14 @@ trait BreadModelTrait
     /**
      * Remove a specific media file related to model
      *
-     * @param int $id
+     * @param int|string $id
      *
      * @throws \Exception|ModelNotFoundException
      */
-    public function removeMedia($id)
+    public function removeMedia($id): void
     {
-        if ($this instanceof \Spatie\MediaLibrary\HasMedia ||
+        if (
+            $this instanceof \Spatie\MediaLibrary\HasMedia ||
             $this instanceof \Spatie\MediaLibrary\HasMedia\HasMedia
         ) {
             $this->media()->findOrFail($id)->delete();
@@ -399,5 +397,4 @@ trait BreadModelTrait
             throw new \Exception('Class must implement HasMedia');
         }
     }
-
 }

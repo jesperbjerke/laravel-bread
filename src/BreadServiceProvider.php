@@ -3,6 +3,7 @@
 namespace Bjerke\Bread;
 
 use Bjerke\Bread\Console\Commands\CleanStaleTusUploadsCommand;
+use Bjerke\Bread\Console\Commands\ClearDefinitionCacheCommand;
 use Illuminate\Support\ServiceProvider;
 
 class BreadServiceProvider extends ServiceProvider
@@ -20,7 +21,8 @@ class BreadServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                CleanStaleTusUploadsCommand::class
+                CleanStaleTusUploadsCommand::class,
+                ClearDefinitionCacheCommand::class
             ]);
         }
     }
