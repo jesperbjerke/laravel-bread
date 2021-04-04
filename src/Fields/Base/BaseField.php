@@ -8,7 +8,7 @@ abstract class BaseField implements FieldConcern
 {
     protected array $definition = [];
     protected string $requiredRule = 'nullable';
-    protected string $validationKey;
+    protected ?string $validationKey = null;
     protected array $validationRules = [];
     protected ?string $group = null;
 

@@ -30,7 +30,7 @@ abstract class BreadController extends Controller
      *
      * @var string|null
      */
-    protected ?string $modelName;
+    protected ?string $modelName = null;
 
     /**
      * Queries all entries

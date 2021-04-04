@@ -3,7 +3,6 @@
 namespace Bjerke\Bread\Fields;
 
 use Bjerke\Bread\Fields\Base\BaseField;
-use Illuminate\Validation\Rule;
 
 /**
  * Add an option select to the model (select dropdown)
@@ -29,7 +28,7 @@ class SelectField extends BaseField
      */
     public function options(array $options = []): self
     {
-        $this->addValidation((string) Rule::in(array_keys($options)));
+        $this->addValidation('in:' . implode(',', array_keys($options)));
         $this->addExtraData([
             'options' => $options
         ]);

@@ -30,7 +30,7 @@ class RadioField extends BaseField
      */
     public function options(array $options = []): self
     {
-        $this->addValidation((string) Rule::in(array_keys($options)));
+        $this->addValidation('in:' . implode(',', array_keys($options)));
         $this->addExtraData([
             'options' => $options
         ]);

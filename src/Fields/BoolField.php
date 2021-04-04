@@ -18,4 +18,17 @@ class BoolField extends BaseField
         $this->showLabel(false);
         return $this;
     }
+
+    /**
+     * @param string $format checkbox|toggle
+     */
+    public function stylingFormat(string $format = 'checkbox'): self
+    {
+        $this->addExtraData([
+            'styling_format' => $format
+        ]);
+
+        return $this;
+    }
+
 }

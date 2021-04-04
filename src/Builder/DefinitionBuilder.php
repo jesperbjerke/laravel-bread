@@ -124,6 +124,15 @@ class DefinitionBuilder
         return $this;
     }
 
+    public function addFields(array $fields): self
+    {
+        foreach ($fields as $field) {
+            $this->addField($field);
+        }
+
+        return $this;
+    }
+
     public function setOptions(array $options): void
     {
         $this->options = $options;
