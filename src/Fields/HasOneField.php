@@ -45,12 +45,12 @@ class HasOneField extends RelationBaseField
         $relationInfo = $model->getRelationType($relation);
 
         if (!isset($this->definition['name']) || !$this->definition['name']) {
-            if (!method_exists($model->{$relationInfo['method']}, 'getQualifiedForeignKeyName')) {
+            if (!method_exists($model->{$relationInfo['method']}(), 'getQualifiedForeignKeyName')) {
                 throw new InvalidArgumentException(
                     'Relationship ' . $relation . ' must implement be of type HasOne'
                 );
             }
-            $this->name($model->{$relationInfo['method']}->getQualifiedForeignKeyName());
+            $this->name($model->{$relationInfo['method']}()->getQualifiedForeignKeyName());
         }
 
         $this->addExtraData([

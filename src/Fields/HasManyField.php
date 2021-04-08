@@ -17,7 +17,7 @@ class HasManyField extends RelationBaseField
         $this->addValidation('array');
         $this->fillable(false);
 
-        if (array_key_exists('relations', config('bread.default_field_group'))) {
+        if (array_key_exists('relations', config('bread.default_field_groups'))) {
             $this->group('relations');
         }
 

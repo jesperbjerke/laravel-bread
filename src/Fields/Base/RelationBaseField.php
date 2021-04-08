@@ -17,7 +17,7 @@ abstract class RelationBaseField extends BaseField
         }
 
         $relationInfo = $model->getRelationType($relation);
-        $fieldName = ($this->definition['name']) ?: Str::snake($relationInfo['method']);
+        $fieldName = ($this->definition['name']) ?? Str::snake($relationInfo['method']);
         $this->name($fieldName);
         $this->addExtraData([
             'relation' => $relationInfo['method'],
