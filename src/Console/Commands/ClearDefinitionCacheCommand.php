@@ -12,7 +12,7 @@ class ClearDefinitionCacheCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'bread:clear-definitions {--force}';
+    protected $signature = 'bread:clear-definitions';
 
     /**
      * The console command description.
