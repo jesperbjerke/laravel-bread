@@ -3,6 +3,7 @@
 namespace Bjerke\Bread\Traits;
 
 use Bjerke\Bread\Builder\DefinitionBuilder;
+use Illuminate\Support\Facades\App;
 use UnexpectedValueException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -52,7 +53,7 @@ trait FieldDefinition
         $flatDefinition = $builder->getFlatDefinition();
 
         if ($builder->isCachable()) {
-            Cache::tags(['bread.model_definitions'])->put(
+            Cache::tags($this->getDefinitionCacheTags())->put(
                 $this->getDefinitionCacheKey(),
                 [
                     'definition' => $fullDefinition,
@@ -70,12 +71,23 @@ trait FieldDefinition
         return strtolower(class_basename($this));
     }
 
+    private function getDefinitionCacheTags(): array
+    {
+        return [
+            'bread.model_definitions',
+            'bread.model_definitions.' . App::getLocale()
+        ];
+    }
+
     private function getCachedDefinition(): array
     {
         $cacheKey = $this->getDefinitionCacheKey();
 
-        if (Cache::supportsTags() && Cache::tags(['bread.model_definitions'])->has($cacheKey)) {
-            $cachedDefinition = Cache::tags(['bread.model_definitions'])->get($cacheKey);
+        if (
+            Cache::supportsTags() &&
+            Cache::tags($this->getDefinitionCacheTags())->has($cacheKey)
+        ) {
+            $cachedDefinition = Cache::tags($this->getDefinitionCacheTags())->get($cacheKey);
             if (
                 isset($cachedDefinition['definition'], $cachedDefinition['flatDefinition']) &&
                 !empty($cachedDefinition['definition']) && !empty($cachedDefinition['flatDefinition'])
