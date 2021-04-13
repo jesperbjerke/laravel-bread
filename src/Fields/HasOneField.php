@@ -19,7 +19,6 @@ class HasOneField extends RelationBaseField
         $this->type('HASONE');
         $this->inputType('model-search');
         $this->addValidation('numeric');
-        $this->fillable(false);
         $this->placeholder(Lang::get('actions.search') . '..');
 
         $this->addExtraData([
@@ -50,7 +49,7 @@ class HasOneField extends RelationBaseField
                     'Relationship ' . $relation . ' must implement be of type HasOne'
                 );
             }
-            $this->name($model->{$relationInfo['method']}()->getQualifiedForeignKeyName());
+            $this->name($model->{$relationInfo['method']}()->getForeignKeyName());
         }
 
         $this->addExtraData([
