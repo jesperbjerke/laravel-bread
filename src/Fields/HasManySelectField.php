@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Lang;
  */
 class HasManySelectField extends RelationBaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('HASMANY');
@@ -43,7 +43,7 @@ class HasManySelectField extends RelationBaseField
         return $this;
     }
 
-    public function searchField(string $fieldName = 'title', bool $setDisplayField = true): self
+    public function searchField(string $fieldName = 'title', bool $setDisplayField = true): static
     {
         $data = [
             'search_field' => $fieldName
@@ -57,7 +57,7 @@ class HasManySelectField extends RelationBaseField
         return $this;
     }
 
-    public function displayField(string $fieldName = 'title'): self
+    public function displayField(string $fieldName = 'title'): static
     {
         $this->addExtraData([
             'display_field' => $fieldName
@@ -65,7 +65,7 @@ class HasManySelectField extends RelationBaseField
         return $this;
     }
 
-    public function prefetch(bool $shouldPrefetch = false): self
+    public function prefetch(bool $shouldPrefetch = false): static
     {
         $this->addExtraData([
             'prefetch' => $shouldPrefetch
@@ -80,7 +80,7 @@ class HasManySelectField extends RelationBaseField
      *
      * @return $this
      */
-    public function extraDisplayField(string $fieldName): self
+    public function extraDisplayField(string $fieldName): static
     {
         $this->addExtraData([
             'extra_display_field' => $fieldName
@@ -95,7 +95,7 @@ class HasManySelectField extends RelationBaseField
      *
      * @return $this
      */
-    public function displayFieldLabels(array $labels): self
+    public function displayFieldLabels(array $labels): static
     {
         $this->addExtraData([
             'display_field_labels' => $labels

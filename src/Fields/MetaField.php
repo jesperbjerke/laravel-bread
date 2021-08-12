@@ -16,7 +16,7 @@ class MetaField extends NestedBaseField
         $this->relationName($relationName);
     }
 
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('META');
@@ -26,7 +26,7 @@ class MetaField extends NestedBaseField
         return $this;
     }
 
-    public function relationName(string $relationName): self
+    public function relationName(string $relationName): static
     {
         $this->addExtraData([
             'relation' => $relationName
@@ -35,7 +35,7 @@ class MetaField extends NestedBaseField
         return $this;
     }
 
-    public function fields(Closure $callback, bool $useNestedGroups = false): self
+    public function fields(Closure $callback, bool $useNestedGroups = false): static
     {
         parent::fields($callback, $useNestedGroups);
         $this->addExtraData([

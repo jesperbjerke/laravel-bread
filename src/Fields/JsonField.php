@@ -10,7 +10,7 @@ use Closure;
  */
 class JsonField extends NestedBaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('JSON');
@@ -19,7 +19,7 @@ class JsonField extends NestedBaseField
         return $this;
     }
 
-    public function fields(Closure $callback, bool $useNestedGroups = false): self
+    public function fields(Closure $callback, bool $useNestedGroups = false): static
     {
         parent::fields($callback, $useNestedGroups);
         $this->addExtraData([

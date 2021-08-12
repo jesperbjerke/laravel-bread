@@ -9,7 +9,7 @@ use Bjerke\Bread\Fields\Base\BaseField;
  */
 class PasswordConfirmField extends BaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('TEXT');
@@ -19,7 +19,7 @@ class PasswordConfirmField extends BaseField
         return $this;
     }
 
-    public function matchField(string $field): self
+    public function matchField(string $field): static
     {
         $this->required(true, 'required_with:' . $field);
         $this->addValidation('same:' . $field);

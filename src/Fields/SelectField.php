@@ -9,7 +9,7 @@ use Bjerke\Bread\Fields\Base\BaseField;
  */
 class SelectField extends BaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('ENUM');
@@ -26,7 +26,7 @@ class SelectField extends BaseField
      *
      * @return $this
      */
-    public function options(array $options = []): self
+    public function options(array $options = []): static
     {
         $this->addValidation('in:' . implode(',', array_keys($options)));
         $this->addExtraData([
@@ -39,7 +39,7 @@ class SelectField extends BaseField
     /**
      * @param string $format select|tags|table
      */
-    public function stylingFormat(string $format = 'select'): self
+    public function stylingFormat(string $format = 'select'): static
     {
         $this->addExtraData([
             'styling_format' => $format

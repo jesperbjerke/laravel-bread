@@ -9,7 +9,7 @@ use Bjerke\Bread\Fields\Base\RelationBaseField;
  */
 class ManyToManyField extends RelationBaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('MANYTOMANY');

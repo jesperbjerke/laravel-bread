@@ -23,7 +23,7 @@ class ImageUploadField extends BaseField
         ]);
     }
 
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('MEDIA');
@@ -41,7 +41,7 @@ class ImageUploadField extends BaseField
         return $this;
     }
 
-    public function multiple(bool $multiple = true): self
+    public function multiple(bool $multiple = true): static
     {
         $this->addExtraData([
             'multiple' => $multiple
@@ -50,7 +50,7 @@ class ImageUploadField extends BaseField
         return $this;
     }
 
-    public function collection(string $collectionName): self
+    public function collection(string $collectionName): static
     {
         $this->addExtraData([
             'collection' => $collectionName
@@ -59,7 +59,7 @@ class ImageUploadField extends BaseField
         return $this;
     }
 
-    public function allowedMimeTypes(array $mimeTypes): self
+    public function allowedMimeTypes(array $mimeTypes): static
     {
         $this->addExtraData([
             'mime_types' => $mimeTypes
@@ -68,7 +68,7 @@ class ImageUploadField extends BaseField
         return $this;
     }
 
-    public function enableTUS(string $tusEndpoint): self
+    public function enableTUS(string $tusEndpoint): static
     {
         $this->addExtraData([
             'tus' => true,

@@ -9,7 +9,7 @@ use Bjerke\Bread\Fields\Base\BaseField;
  */
 class TextField extends BaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('TEXT');
@@ -20,7 +20,7 @@ class TextField extends BaseField
         return $this;
     }
 
-    public function maxLength(int $length = 255): self
+    public function maxLength(int $length = 255): static
     {
         $this->validationRules = array_filter(
             $this->validationRules,
@@ -33,7 +33,7 @@ class TextField extends BaseField
         return $this;
     }
 
-    public function minLength(int $length = 255): self
+    public function minLength(int $length = 255): static
     {
         $this->validationRules = array_filter(
             $this->validationRules,

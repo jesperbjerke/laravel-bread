@@ -82,7 +82,7 @@ class DefinitionBuilder
      * @return $this
      * @throws InvalidFieldDefinition
      */
-    public function addField(FieldConcern $field): self
+    public function addField(FieldConcern $field): static
     {
         $definition = $field->getDefinition();
         $this->validateSingleDefinition($definition);
@@ -124,7 +124,7 @@ class DefinitionBuilder
         return $this;
     }
 
-    public function addFields(array $fields): self
+    public function addFields(array $fields): static
     {
         foreach ($fields as $field) {
             $this->addField($field);
@@ -209,7 +209,7 @@ class DefinitionBuilder
      *
      * @return $this
      */
-    public function setCacheable(bool $isCachable = true, int $ttl = 20160): self
+    public function setCacheable(bool $isCachable = true, int $ttl = 20160): static
     {
         if ($isCachable && !Cache::supportsTags()) {
             throw new BadMethodCallException('This cache store does not support tagging.');

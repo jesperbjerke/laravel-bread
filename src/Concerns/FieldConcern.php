@@ -4,40 +4,40 @@ namespace Bjerke\Bread\Concerns;
 
 interface FieldConcern
 {
-    public function name(string $name): self;
+    public function name(string $name): static;
 
-    public function label(string $label): self;
-    public function showLabel(bool $show = true): self;
+    public function label(string $label): static;
+    public function showLabel(bool $show = true): static;
 
-    public function description(string $description): self;
-    public function placeholder(string $placeholder): self;
+    public function description(string $description): static;
+    public function placeholder(string $placeholder): static;
 
-    public function group(string $group): self;
+    public function group(string $group): static;
     public function getGroup(): string;
 
-    public function defaultValue($value = null): self;
+    public function defaultValue($value = null): static;
 
-    public function required(bool $required = false, ?string $requiredRule = null): self;
+    public function required(bool $required = false, ?string $requiredRule = null): static;
 
-    public function setValidationKey(string $key): self;
+    public function setValidationKey(string $key): static;
     public function getValidationKey(): string;
 
-    public function setValidation(array $rules): self;
-    public function addValidation(string $rule): self;
+    public function setValidation(array $rules): static;
+    public function addValidation(string $rule): static;
 
     public function getRuleString(): string;
     public function getRules(): array;
 
-    public function fillable(bool $fillable = true): self;
-    public function hidden(bool $hidden = true): self;
-    public function inputHidden(bool $hidden = true): self;
+    public function fillable(bool $fillable = true): static;
+    public function hidden(bool $hidden = true): static;
+    public function inputHidden(bool $hidden = true): static;
 
-    public function type(string $type): self;
-    public function inputType(string $type): self;
+    public function type(string $type): static;
+    public function inputType(string $type): static;
 
-    public function addExtraData(array $data): self;
+    public function addExtraData(array $data): static;
 
-    public function hiddenOn(array $hiddenOn): self;
+    public function hiddenOn(array $hiddenOn): static;
 
     public function getDefinition(): array;
 }

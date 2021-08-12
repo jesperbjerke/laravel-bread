@@ -9,7 +9,7 @@ use Bjerke\Bread\Fields\Base\BaseField;
  */
 class EmailField extends BaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('TEXT');

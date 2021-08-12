@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
  */
 class RadioField extends BaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('ENUM');
@@ -28,7 +28,7 @@ class RadioField extends BaseField
      *
      * @return $this
      */
-    public function options(array $options = []): self
+    public function options(array $options = []): static
     {
         $this->addValidation('in:' . implode(',', array_keys($options)));
         $this->addExtraData([
@@ -41,7 +41,7 @@ class RadioField extends BaseField
     /**
      * @param string $format radio|buttons|toggle
      */
-    public function stylingFormat(string $format = 'radio'): self
+    public function stylingFormat(string $format = 'radio'): static
     {
         $this->addExtraData([
             'styling_format' => $format

@@ -9,7 +9,7 @@ use Bjerke\Bread\Fields\Base\BaseField;
  */
 class TimeField extends BaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('TEXT');
@@ -27,7 +27,7 @@ class TimeField extends BaseField
      *
      * @return $this
      */
-    public function maxDate(string $time): self
+    public function maxDate(string $time): static
     {
         $this->addExtraData([
             'max' => $time
@@ -40,7 +40,7 @@ class TimeField extends BaseField
      *
      * @return $this
      */
-    public function minDate(string $time): self
+    public function minDate(string $time): static
     {
         $this->addExtraData([
             'min' => $time
@@ -48,7 +48,7 @@ class TimeField extends BaseField
         return $this;
     }
 
-    public function timezone(string $timezone): self
+    public function timezone(string $timezone): static
     {
         $this->addExtraData([
             'timezone' => $timezone

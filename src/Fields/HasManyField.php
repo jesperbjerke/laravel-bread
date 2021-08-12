@@ -9,7 +9,7 @@ use Bjerke\Bread\Fields\Base\RelationBaseField;
  */
 class HasManyField extends RelationBaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('HASMANY');

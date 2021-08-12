@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
  */
 class CheckboxField extends BaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('ENUM');
@@ -20,7 +20,7 @@ class CheckboxField extends BaseField
         return $this;
     }
 
-    public function name(string $name): self
+    public function name(string $name): static
     {
         $hasValidationKey = (bool) $this->validationKey;
         parent::name($name);
@@ -40,7 +40,7 @@ class CheckboxField extends BaseField
      *
      * @return $this
      */
-    public function options(array $options = []): self
+    public function options(array $options = []): static
     {
         $this->addValidation('in:' . implode(',', array_keys($options)));
         $this->addExtraData([
@@ -53,7 +53,7 @@ class CheckboxField extends BaseField
     /**
      * @param string $format checkbox
      */
-    public function stylingFormat(string $format = 'checkbox'): self
+    public function stylingFormat(string $format = 'checkbox'): static
     {
         $this->addExtraData([
             'styling_format' => $format

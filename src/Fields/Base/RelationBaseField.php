@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 abstract class RelationBaseField extends BaseField
 {
-    public function relation(string $relation, Model $model): self
+    public function relation(string $relation, Model $model): static
     {
         if (!method_exists($model, 'getRelationType')) {
             throw new InvalidArgumentException(
@@ -28,7 +28,7 @@ abstract class RelationBaseField extends BaseField
         return $this;
     }
 
-    public function endpoint(string $endpoint): self
+    public function endpoint(string $endpoint): static
     {
         $this->addExtraData([
             'endpoint' => $endpoint

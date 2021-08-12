@@ -12,7 +12,7 @@ abstract class NestedBaseField extends BaseField
     protected bool $useNestedGroups = false;
     protected bool $isRepeatable = false;
 
-    public function fields(Closure $callback, bool $useNestedGroups = false): self
+    public function fields(Closure $callback, bool $useNestedGroups = false): static
     {
         $this->useNestedGroups = $useNestedGroups;
 

@@ -9,7 +9,7 @@ use Bjerke\Bread\Fields\Base\BaseField;
  */
 class BoolField extends BaseField
 {
-    protected function setDefaultDefinition(): self
+    protected function setDefaultDefinition(): static
     {
         parent::setDefaultDefinition();
         $this->type('BOOL');
@@ -22,7 +22,7 @@ class BoolField extends BaseField
     /**
      * @param string $format checkbox|toggle
      */
-    public function stylingFormat(string $format = 'checkbox'): self
+    public function stylingFormat(string $format = 'checkbox'): static
     {
         $this->addExtraData([
             'styling_format' => $format
