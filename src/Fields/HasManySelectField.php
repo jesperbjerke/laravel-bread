@@ -32,7 +32,7 @@ class HasManySelectField extends RelationBaseField
         return $this;
     }
 
-    public function relation(string $relation, Model $model): RelationBaseField
+    public function relation(string $relation, Model $model): static
     {
         parent::relation($relation, $model);
 
