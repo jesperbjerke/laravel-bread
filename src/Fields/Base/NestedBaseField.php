@@ -25,7 +25,8 @@ abstract class NestedBaseField extends BaseField
             $this->nestedFields = $definition['field_groups'];
         } else {
             $groupFields = array_map(static fn ($group) => $group['fields'], $definition['field_groups']);
-            $this->nestedFields = array_merge(...$groupFields);
+            $allGroupFields = array_values($groupFields);
+            $this->nestedFields = array_merge(...$allGroupFields);
         }
 
         return $this;
