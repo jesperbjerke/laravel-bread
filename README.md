@@ -139,11 +139,11 @@ Add files/images:
 ```json
 {
   "data" : {
-    "files" : {
+    "files" : [{
       "base64" : "base64 encoded string representation of the image/file",
       "name" : "Filename",
       "add" : true
-    }
+    }]
   }
 }
 ```
@@ -152,10 +152,10 @@ Remove files/images:
 ```json
 {
   "data" : {
-    "files" : {
+    "files" : [{
       "id" : 1,
       "remove" : true
-    }
+    }]
   }
 }
 ```
