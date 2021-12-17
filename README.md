@@ -170,11 +170,11 @@ When submitting the files, you send the unique upload key received from the TUS 
 ```json
 {
   "data" : {
-    "files" : {
+    "files" : [{
       "tusKey" : "002f12d4-6949-4266-af06-675f653c0bdc",
       "name" : "Filename",
       "add" : true
-    }
+    }]
   }
 }
 ```
