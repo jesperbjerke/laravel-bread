@@ -47,7 +47,7 @@ abstract class BreadController extends Controller
 
         $query = $queryBuilder->build();
 
-        if ($applyQuery instanceof \Closure) {
+        if ($applyQuery instanceof Closure) {
             $applyQuery($query);
         }
 
@@ -64,6 +64,29 @@ abstract class BreadController extends Controller
     }
 
     /**
+     * Perform single resource lookup. Fails if not found.
+     * Queries by primary key by default.
+     *
+     * @param Request      $request
+     * @param string|int   $id
+     * @param Closure|null $applyQuery Apply custom query before fetching
+     *
+     * @return Model
+     */
+    public function findOrFailByQuery(Request $request, $id, ?Closure $applyQuery = null): Model
+    {
+        if ($applyQuery instanceof Closure) {
+            $model = $this->getModel();
+            $query = $model->newQuery();
+            $query->where($model->getQualifiedKeyName(), $id);
+            $applyQuery($query);
+            return $query->firstOrFail();
+        }
+
+        return $this->getModel()->findOrFail($id);
+    }
+
+    /**
      * View single resource
      *
      * @param Request       $request
@@ -75,20 +98,13 @@ abstract class BreadController extends Controller
      */
     public function view(Request $request, $id, ?Closure $applyQuery = null): Model
     {
-        if ($applyQuery instanceof \Closure) {
-            $query = $this->getModel()->newQuery();
-            $query->where('id', $id);
-            $applyQuery($query);
-            $model = $query->firstOrFail();
-        } else {
-            $model = $this->getModel()->findOrFail($id);
-        }
+        $model = $this->findOrFailByQuery($request, $id, $applyQuery);
 
         if (($with = $request->get('with')) !== null) {
             if (is_string($with)) {
                 $with = explode(',', $with);
             }
-            $model->load($model->validatedApiRelations(array_map(static function ($relation) {
+            $model->loadMissing($model->validatedApiRelations(array_map(static function ($relation) {
                 return Str::camel($relation);
             }, $with)));
         }
@@ -142,7 +158,7 @@ abstract class BreadController extends Controller
 
         $model->fill($fillables);
 
-        if ($beforeSave instanceof \Closure) {
+        if ($beforeSave instanceof Closure) {
             $beforeSave($model);
         }
 
@@ -173,14 +189,7 @@ abstract class BreadController extends Controller
         ?Closure $applyQuery = null,
         ?Closure $beforeSave = null
     ) {
-        if ($applyQuery instanceof Closure) {
-            $query = $this->getModel()->newQuery();
-            $query->where('id', $id);
-            $applyQuery($query);
-            $model = $query->firstOrFail();
-        } else {
-            $model = $this->getModel()->findOrFail($id);
-        }
+        $model = $this->findOrFailByQuery($request, $id, $applyQuery);
 
         $model->compileDefinition();
 
@@ -191,7 +200,7 @@ abstract class BreadController extends Controller
 
         $model->fill($fillables);
 
-        if ($beforeSave instanceof \Closure) {
+        if ($beforeSave instanceof Closure) {
             $beforeSave($model);
         }
 
@@ -219,16 +228,9 @@ abstract class BreadController extends Controller
         ?Closure $applyQuery = null,
         ?Closure $beforeDelete = null
     ): void {
-        if ($applyQuery instanceof Closure) {
-            $query = $this->getModel()->newQuery();
-            $query->where('id', $id);
-            $applyQuery($query);
-            $model = $query->firstOrFail();
-        } else {
-            $model = $this->getModel()->findOrFail($id);
-        }
+        $model = $this->findOrFailByQuery($request, $id, $applyQuery);
 
-        if ($beforeDelete instanceof \Closure) {
+        if ($beforeDelete instanceof Closure) {
             $beforeDelete($model);
         }
 
@@ -256,14 +258,7 @@ abstract class BreadController extends Controller
         ?Closure $applyQuery = null,
         ?Closure $beforeDetach = null
     ): void {
-        if ($applyQuery instanceof Closure) {
-            $query = $this->getModel()->newQuery();
-            $query->where('id', $id);
-            $applyQuery($query);
-            $model = $query->firstOrFail();
-        } else {
-            $model = $this->getModel()->findOrFail($id);
-        }
+        $model = $this->findOrFailByQuery($request, $id, $applyQuery);
 
         $relatedIds = [];
         $model->compileDefinition();
@@ -320,14 +315,7 @@ abstract class BreadController extends Controller
         ?Closure $applyQuery = null,
         ?Closure $beforeAttach = null
     ): void {
-        if ($applyQuery instanceof Closure) {
-            $query = $this->getModel()->newQuery();
-            $query->where('id', $id);
-            $applyQuery($query);
-            $model = $query->firstOrFail();
-        } else {
-            $model = $this->getModel()->findOrFail($id);
-        }
+        $model = $this->findOrFailByQuery($request, $id, $applyQuery);
 
         $relatedIds = [];
         $model->compileDefinition();
@@ -348,7 +336,7 @@ abstract class BreadController extends Controller
         }
 
         if (!empty($relatedIds)) {
-            if ($beforeAttach instanceof \Closure) {
+            if ($beforeAttach instanceof Closure) {
                 $beforeAttach($model, $relationType, $relatedIds);
             }
 
