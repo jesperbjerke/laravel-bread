@@ -49,4 +49,10 @@ abstract class NestedBaseField extends BaseField
 
         return $rules;
     }
+
+    public function preventUnknownFields(bool $prevent = true): static
+    {
+        $this->addExtraData(['prevent_unknown_fields' => $prevent]);
+        return $this;
+    }
 }

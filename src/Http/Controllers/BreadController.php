@@ -458,8 +458,8 @@ abstract class BreadController extends Controller
         $existingMeta = [];
 
         if ($model->exists && $model->{$relation}->isNotEmpty()) {
-            foreach ($model->{$relation} as $Meta) {
-                $existingMeta[$Meta->meta_key] = $Meta->meta_value;
+            foreach ($model->{$relation} as $meta) {
+                $existingMeta[$meta->meta_key] = $meta->meta_value;
             }
         }
 

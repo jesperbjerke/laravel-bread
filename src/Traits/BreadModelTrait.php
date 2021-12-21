@@ -143,18 +143,70 @@ trait BreadModelTrait
         $flatFieldDefinition = $this->getFlatFieldDefinition();
 
         foreach ($rawAttributes as $fieldName => $fieldValue) {
-            if (
-                isset($flatFieldDefinition[$fieldName]['type']) &&
-                $flatFieldDefinition[$fieldName]['type'] === 'ENUM' &&
-                is_array($fieldValue)
-            ) {
-                $rawAttributes[$fieldName] = implode(';', array_filter($fieldValue, static function ($val) {
-                    return $val !== '' && $val !== null;
-                }));
+            if (!isset($flatFieldDefinition[$fieldName]['type'])) {
+                continue;
+            }
+
+            $thisField = $flatFieldDefinition[$fieldName];
+
+            switch ($thisField['type']) {
+                case 'ENUM':
+                    if (!is_array($fieldValue)) {
+                        break;
+                    }
+
+                    $rawAttributes[$fieldName] = implode(';', array_filter($fieldValue, static function ($val) {
+                        return $val !== '' && $val !== null;
+                    }));
+                    break;
+
+                case 'JSON':
+                    if (!($thisField['extra_data']['prevent_unknown_fields'] ?? false)) {
+                        break;
+                    }
+
+                    $rawAttributes[$fieldName] = $this->filterUnkownJsonKeys($thisField, $rawAttributes[$fieldName]);
+                    break;
             }
         }
 
         return $rawAttributes;
+    }
+
+    /**
+     * Removes all provided keys that are not includes in the field definition
+     *
+     * @param array       $fieldDefinition
+     * @param string|null $json
+     *
+     * @return string|null
+     * @throws \JsonException
+     */
+    public function filterUnkownJsonKeys(array $fieldDefinition, ?string $json): ?string
+    {
+        if (!$json) {
+            return $json;
+        }
+
+        $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        $knownKeys = array_map(fn ($field) => $field['name'], $fieldDefinition['extra_data']['fields'] ?? []);
+        $isRepeatable = ($fieldDefinition['input_type'] ?? null) === 'repeatable-nested-fields';
+
+        if ($isRepeatable) {
+            $filteredData = array_map(fn ($singleData) => array_filter(
+                $singleData,
+                fn($key) => in_array($key, $knownKeys, true),
+                ARRAY_FILTER_USE_KEY
+            ), $data);
+        } else {
+            $filteredData = array_filter(
+                $data,
+                fn($key) => in_array($key, $knownKeys, true),
+                ARRAY_FILTER_USE_KEY
+            );
+        }
+
+        return json_encode($filteredData, JSON_THROW_ON_ERROR);
     }
 
     /**
