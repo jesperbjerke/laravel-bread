@@ -60,7 +60,7 @@ abstract class BreadController extends Controller
 
         $perPage = $request->input('per_page');
 
-        return $query->paginate($perPage)->appends($request->except('page'));
+        return $query->paginate($perPage)->appends($request->query());
     }
 
     /**
