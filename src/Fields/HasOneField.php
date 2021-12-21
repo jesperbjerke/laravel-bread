@@ -18,7 +18,7 @@ class HasOneField extends RelationBaseField
         parent::setDefaultDefinition();
         $this->type('HASONE');
         $this->inputType('model-search');
-        $this->addValidation('numeric');
+        $this->addValidation('numeric|integer');
         $this->placeholder(Lang::get('actions.search') . '..');
 
         $this->addExtraData([

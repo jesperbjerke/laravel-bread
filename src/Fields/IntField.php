@@ -14,7 +14,7 @@ class IntField extends BaseField
         parent::setDefaultDefinition();
         $this->type('INT');
         $this->inputType('number');
-        $this->addValidation('numeric');
+        $this->addValidation('numeric|integer');
         return $this;
     }
 }
