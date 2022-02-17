@@ -189,6 +189,13 @@ trait BreadModelTrait
         }
 
         $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+
+        if (!is_array($data)) {
+            throw ValidationException::withMessages([
+                $fieldDefinition['name'] => 'Invalid json data',
+            ]);
+        }
+
         $knownKeys = array_map(fn ($field) => $field['name'], $fieldDefinition['extra_data']['fields'] ?? []);
         $isRepeatable = ($fieldDefinition['input_type'] ?? null) === 'repeatable-nested-fields';
 
