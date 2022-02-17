@@ -424,10 +424,10 @@ abstract class BreadController extends Controller
      */
     protected function validateArray(array $params, array $rules): void
     {
-        $Validator = $this->getValidationFactory()->make($params, $rules);
+        $validator = $this->getValidationFactory()->make($params, $rules);
 
-        if ($Validator->fails()) {
-            throw new ValidationException($Validator);
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
         }
     }
 
