@@ -200,6 +200,7 @@ trait BreadModelTrait
         $isRepeatable = ($fieldDefinition['input_type'] ?? null) === 'repeatable-nested-fields';
 
         if ($isRepeatable) {
+            $data = array_filter($data, fn ($singleData) => is_array($singleData));
             $filteredData = array_map(fn ($singleData) => array_filter(
                 $singleData,
                 fn($key) => in_array($key, $knownKeys, true),
