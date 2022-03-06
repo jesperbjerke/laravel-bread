@@ -179,7 +179,7 @@ abstract class BreadController extends Controller
      * @param Closure|null $applyQuery Apply custom query before fetching
      * @param Closure|null $beforeSave Apply custom logic before save method is called on model
      *
-     * @return bool|null|Model The newly updated model
+     * @return Model The newly updated model
      * @throws NotFoundHttpException|HttpException|ValidationException
      */
     public function update(
@@ -204,12 +204,10 @@ abstract class BreadController extends Controller
             $beforeSave($model);
         }
 
-        if ($model->save()) {
-            $this->afterModelSave($model, $attributes);
-            return $this->loadFresh($request, $model, $with);
-        }
+        $model->saveOrFail();
+        $this->afterModelSave($model, $attributes);
 
-        throw new HttpException(500, 'Resource could not be saved');
+        return $this->loadFresh($request, $model, $with);
     }
 
     /**
@@ -234,9 +232,7 @@ abstract class BreadController extends Controller
             $beforeDelete($model);
         }
 
-        if (!$model->delete()) {
-            throw new HttpException(500, 'Resource could not be deleted');
-        }
+        $model->deleteOrFail();
     }
 
     /**
