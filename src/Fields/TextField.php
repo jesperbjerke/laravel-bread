@@ -26,7 +26,7 @@ class TextField extends BaseField
             $this->validationRules,
             static fn ($rule) => strpos($rule, 'max:') === false
         );
-        $this->addValidation('max:' . 255);
+        $this->addValidation('max:' . $length);
         $this->addExtraData([
             'max' => $length
         ]);
@@ -39,7 +39,7 @@ class TextField extends BaseField
             $this->validationRules,
             static fn ($rule) => strpos($rule, 'min:') === false
         );
-        $this->addValidation('min:' . 255);
+        $this->addValidation('min:' . $length);
         $this->addExtraData([
             'min' => $length
         ]);

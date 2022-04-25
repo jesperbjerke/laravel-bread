@@ -17,4 +17,30 @@ class IntField extends BaseField
         $this->addValidation('numeric|integer');
         return $this;
     }
+
+    public function max(int $length): static
+    {
+        $this->validationRules = array_filter(
+            $this->validationRules,
+            static fn ($rule) => strpos($rule, 'max:') === false
+        );
+        $this->addValidation('max:' . $length);
+        $this->addExtraData([
+            'max' => $length
+        ]);
+        return $this;
+    }
+
+    public function min(int $length): static
+    {
+        $this->validationRules = array_filter(
+            $this->validationRules,
+            static fn ($rule) => strpos($rule, 'min:') === false
+        );
+        $this->addValidation('min:' . $length);
+        $this->addExtraData([
+            'min' => $length
+        ]);
+        return $this;
+    }
 }
