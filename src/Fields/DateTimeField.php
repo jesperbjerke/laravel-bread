@@ -29,6 +29,7 @@ class DateTimeField extends BaseField
      */
     public function maxDate(string $date): static
     {
+        $this->addValidation('before_or_equal:' . $date);
         $this->addExtraData([
             'max' => $date
         ]);
@@ -42,6 +43,7 @@ class DateTimeField extends BaseField
      */
     public function minDate(string $date): static
     {
+        $this->addValidation('after_or_equal:' . $date);
         $this->addExtraData([
             'min' => $date
         ]);
