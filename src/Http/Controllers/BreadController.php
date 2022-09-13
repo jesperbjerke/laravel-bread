@@ -430,16 +430,23 @@ abstract class BreadController extends Controller
     /**
      * Validates provided meta fields. Takes current meta fields into account
      *
-     * @param Model     $model
-     * @param string    $relation
-     * @param array     $attributes
-     * @param array     $fieldsConfig
+     * @param Model $model
+     * @param array $metaFieldConfig
+     * @param array $metaAttributes
+     * @param array $modelAttributes
      *
      * @throws ValidationException
      */
-    protected function validateMetaFields(Model $model, string $relation, array $attributes, array $fieldsConfig): void
-    {
+    protected function validateMetaFields(
+        Model $model,
+        array $metaFieldConfig,
+        array $metaAttributes,
+        array $modelAttributes
+    ): void {
         $existingMeta = [];
+
+        $relation = $metaFieldConfig['extra_data']['relation'];
+        $nestedFieldsConfig = $metaFieldConfig['extra_data']['fields'];
 
         if ($model->exists && $model->{$relation}->isNotEmpty()) {
             foreach ($model->{$relation} as $meta) {
@@ -447,26 +454,26 @@ abstract class BreadController extends Controller
             }
         }
 
-        $rawAttrsToValidate = array_merge($existingMeta, $attributes);
+        $rawAttrsToValidate = array_merge($existingMeta, $metaAttributes);
         // Format the array to work with dot-notated keys
-        $attrsToValidate = [];
+        $metaAttrsToValidate = [$metaFieldConfig['name'] => []];
         foreach ($rawAttrsToValidate as $key => $value) {
-            \Arr::set($attrsToValidate, $key, $value);
+            \Arr::set($metaAttrsToValidate[$metaFieldConfig['name']], $key, $value);
         }
-        $rules = [];
+        $rules = [$metaFieldConfig['name'] => []];
 
-        foreach ($fieldsConfig as $config) {
+        foreach ($nestedFieldsConfig as $config) {
             if (!isset($config['name']) && isset($config['fields'])) {
                 // Grouped meta field
                 foreach ($config['fields'] as $subConfig) {
-                    $rules[$subConfig['name']] = $subConfig['rule_string'];
+                    $rules[implode('.', [$metaFieldConfig['name'], $subConfig['name']])] = $subConfig['rule_string'];
                 }
             } else {
-                $rules[$config['name']] = $config['rule_string'];
+                $rules[implode('.', [$metaFieldConfig['name'], $config['name']])] = $config['rule_string'];
             }
         }
 
-        $this->validateArray($attrsToValidate, $rules);
+        $this->validateArray(array_merge($model->getAttributes(), $modelAttributes, $metaAttrsToValidate), $rules);
     }
 
     /**
@@ -572,9 +579,9 @@ abstract class BreadController extends Controller
                 if (isset($field['extra_data']['fields'], $field['extra_data']['relation'])) {
                     $this->validateMetaFields(
                         $model,
-                        $field['extra_data']['relation'],
+                        $field,
                         $attributes[$field['name']],
-                        $field['extra_data']['fields']
+                        $attributes
                     );
                 }
             }
