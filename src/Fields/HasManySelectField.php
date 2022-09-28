@@ -50,7 +50,7 @@ class HasManySelectField extends RelationBaseField
         ];
 
         if ($setDisplayField) {
-            $date['display_field'] = $fieldName;
+            $data['display_field'] = $fieldName;
         }
 
         $this->addExtraData($data);
